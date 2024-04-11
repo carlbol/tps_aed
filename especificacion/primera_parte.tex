@@ -1,0 +1,81 @@
+\documentclass[10pt,a4paper]{article}
+
+\input{AEDmacros}
+\usepackage{caratula} % Version modificada para usar las macros de algo1 de ~> https://github.com/bcardiff/dc-tex
+
+
+\titulo{Especificaci\'on y correcci\'on de problemas}
+\fecha{\today}
+
+\materia{Algoritmos y Estructuras de Datos}
+\grupo{numero azar}
+
+\integrante{Apellido, Nombre2}{002/01}{email2@dominio.com}
+\integrante{Apellido, Nombre3}{003/01}{email3@dominio.com}
+\integrante{Bol\'ivar, Carlos}{990/23}{carlosbolivarp24@gmail.com}
+\integrante{Apellido, Nombre4}{004/01}{email4@dominio.com}
+% Pongan cuantos integrantes quieran
+
+% Declaramos donde van a estar las figuras
+% No es obligatorio, pero suele ser comodo
+\graphicspath{{../static/}}
+
+\begin{document}
+
+\maketitle
+
+\section{Especificaci\'on}
+\subsection{redistribucionDeLosFrutos}
+
+\begin{proc}{redistribucionDeLosFrutos}{\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}{\TLista{\float}}
+
+\requiere{\longitud{recursos} = \longitud{cooperan}}
+\requiere{noNulos([recursos, cooperan])}
+\asegura{recursosPosDistribucion(res, recursos, cooperan) \wedge (\longitud{res} = \longitud{recursos})}
+\hfill \break
+\pred{noNulos}{\In s : \TLista{T}}
+{\paraTodo[unalinea]{n}{\ent}{0 \leq n < \longitud{s} \implicaLuego \longitud{s[n]} > 0}}
+\hfill \break
+\pred{recursosPosDistribucion}{\In result : \TLista{\float} ,\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}
+{\paraTodo[unalinea]{i}{\ent}{(0\leq i < \longitud{result}) \yLuego (cooperan[i] = \True) \implicaLuego  result[i] = \frac{fondoComun(recursos, cooperan)}{\longitud{recursos}} } 
+\newline \wedge \newline 
+\paraTodo[unalinea]{j}{\ent}{(0\leq j < \longitud{result}) \yLuego (cooperan[j] = \False) \implicaLuego  result[j] = recursos[j] + \frac{fondoComun(recursos, cooperan)}{\longitud{recursos}} } 
+} 
+\hfill \break
+\aux{fondoComun}{\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}{\float}\hfill {
+$\sum_{k=0}^{\longitud{recursos}}$
+(\IfThenElse{cooperan[k] = \True}{recursos[k]}{0})
+}
+
+\end{proc}
+
+\subsection{Trayectoria de los frutos individuales a largo plazo}
+
+\begin{proc}{trayectoriaDeLosFrutosIndividualesALargoPlazo}{\Inout trayectorias : \TLista{\TLista{\float}}, \In cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}{}
+
+\requiere{(\longitud{trayectorias} = \longitud{cooperan}) \wedge (\longitud{apuestas} = \longitud{pagos})}
+
+\requiere{noNulos([trayectorias, cooperan, apuestas, pagos, eventos])}
+
+\asegura{\longitud{trayectoria} >= \longitud{old(trayectoria)}}
+\asegura{
+\paraTodo[unalinea]{i}{\ent}{
+0 \leq i < \longitud{eventos} \implicaLuego 
+\paraTodo[]{j}{\ent}{0 \leq j < \longitud{eventos[i]} \implicaLuego trayectorias[i][j+1] = \IfThenElse{(coopera[i] = \False)}{\\ pagoParaJugadoriDelEventoj(trayectoria, apuestas, pagos, eventos, i, j) \\ + 
+frutosFondoComun(trayectoria, apuestas, pagos, eventos, cooperan, i, j)\\}{frutosFondoComun(trayectoria, apuestas, pagos, eventos, cooperan, i, j)} }
+}
+}
+\hfill \break
+\aux{pagoParaJugadoriDelEventoj}{\In trayectorias : \TLista{\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In i : \ent, \In j : \ent}{\float}{
+trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i][j]}]
+}
+\hfill \break
+\aux{frutosFondoComun}{\In trayectorias : \TLista{\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}, \In i : \ent, \In j : \ent}{\float}{\frac{fondoComunDelEventoj(trayectoria, apuestas, pagos, eventos ,cooperan, j)}{\longitud{cooperan}}}
+\hfill \break
+\aux{fondoComunDelEventoj}{\In trayectorias : \TLista{\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}, \In j : \ent}{\float}{
+\\ \sum_{i=0}^{|cooperan|-1} (\IfThenElse{cooperan[i] = \True}{pagoParaJugadoriDelEventoj(trayectoria, apuestas, pagos, eventos, i, j)}{0})
+}
+\end{proc}
+
+
+\end{document}
