@@ -8,7 +8,7 @@
 \fecha{\today}
 
 \materia{Algoritmos y Estructuras de Datos}
-\grupo{numero azar}
+\grupo{DMSCXIDCOPMHURGQJPDP}
 
 \integrante{Delicia, Felipe Nahuel}{002/01}{delicia4581@gmail.com}
 \integrante{Bagini, Jeremias Agustin}{618/20}{jerebagini@gmail.com}
@@ -59,6 +59,7 @@ $\sum_{k=0}^{\longitud{recursos}-1}$
 % \asegura{\longitud{trayectorias} \geq 
 % \longitud{old(trayectorias)}}
 
+\asegura{\paraTodo[unalinea]{k}{\ent}{0 \leq k < \longitud{trayectorias} \implicaLuego \longitud{trayectorias[k] \geq \longitud{old(trayectorias[k])}}}}
 \asegura{
 \paraTodo[unalinea]{i}{\ent}{
 0 \leq i < \longitud{eventos} \implicaLuego 
@@ -96,8 +97,8 @@ trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i
 \subsection{Individuo decide si cooperar o no}
 \begin{proc}{individuoDecideSiCooperarONo}{\In individuo : \nat, \In recursos : \TLista{\float}, \Inout cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{}
 
-\requiere{\longitud{individuo} = \longitud{recursos} = \longitud{cooperan}}
-\requiere{\longitud{apuestas} = \longitud{pagos} = \longitud{eventos}}
+\requiere{ 0 \leq individuo < \longitud{recursos}}
+\requiere{\longitud{recursos} = \longitud{cooperan} \longitud{apuestas} = \longitud{pagos} = \longitud{eventos}}
 
 \asegura{cooperan[individuo] = true \Leftrightarrow \\(recursosFinalesSiCoopera(individuo, recursos, cooperan, apuestas, pagos, eventos) \geq \\recursosFinalesSiDeserta(individuo, recursos, apuestas, pagos, eventos))}
 \hfill \break
@@ -118,5 +119,15 @@ recursos[i]*apuestas[i][\textbf{eventos[i][0]}]*pagos[i][\textbf{eventos[i][0]}]
 \\ \sum_{i=0}^{|cooperan|-1} \\(\IfThenElse{cooperan[i] = \True}{recursosParaJugadoriTrasEventoInicial(recursos, apuestas, pagos, eventos, i)}{0})
 }
 \end{proc}
+
+\subsection{Individuo actualiza apuesta}
+\begin{proc}{individuoActualizaApuesta}{\In individuo : \nat, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \Inout apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{}
+\requiere{}
+\asegura{}
+    
+\end{proc}
+
+
+
 
 \end{document}
