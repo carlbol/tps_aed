@@ -10,10 +10,10 @@
 \materia{Algoritmos y Estructuras de Datos}
 \grupo{numero azar}
 
-\integrante{Apellido, Nombre2}{002/01}{email2@dominio.com}
-\integrante{Apellido, Nombre3}{003/01}{email3@dominio.com}
+\integrante{Delicia, Felipe Nahuel}{002/01}{delicia4581@gmail.com}
+\integrante{Bagini, Jeremias Agustin}{618/20}{jerebagini@gmail.com}
 \integrante{Bol\'ivar, Carlos}{990/23}{carlosbolivarp24@gmail.com}
-\integrante{Apellido, Nombre4}{004/01}{email4@dominio.com}
+\integrante{De La Pina, Lucas Le\'on}{924/22}{lldelapina@gmail.com}
 % Pongan cuantos integrantes quieran
 
 % Declaramos donde van a estar las figuras
@@ -30,12 +30,12 @@
 \begin{proc}{redistribucionDeLosFrutos}{\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}{\TLista{\float}}
 
 \requiere{\longitud{recursos} = \longitud{cooperan}}
-\requiere{noNulos([recursos, cooperan])}
+% \requiere{(\longitud{recursos} > 0) \wedge (\longitud{cooperan} > 0)}
+% Revisar si conviene la version de Jere
+
 \asegura{recursosPosDistribucion(res, recursos, cooperan) \wedge (\longitud{res} = \longitud{recursos})}
 \hfill \break
-\pred{noNulos}{\In s : \TLista{T}}
-{\paraTodo[unalinea]{n}{\ent}{0 \leq n < \longitud{s} \implicaLuego \longitud{s[n]} > 0}}
-\hfill \break
+
 \pred{recursosPosDistribucion}{\In result : \TLista{\float} ,\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}
 {\paraTodo[unalinea]{i}{\ent}{(0\leq i < \longitud{result}) \yLuego (cooperan[i] = \True) \implicaLuego  result[i] = \frac{fondoComun(recursos, cooperan)}{\longitud{recursos}} } 
 \newline \wedge \newline 
@@ -43,7 +43,7 @@
 } 
 \hfill \break
 \aux{fondoComun}{\In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}}{\float}\hfill {
-$\sum_{k=0}^{\longitud{recursos}}$
+$\sum_{k=0}^{\longitud{recursos}-1}$
 (\IfThenElse{cooperan[k] = \True}{recursos[k]}{0})
 }
 
@@ -55,9 +55,10 @@ $\sum_{k=0}^{\longitud{recursos}}$
 
 \requiere{(\longitud{trayectorias} = \longitud{cooperan}) \wedge (\longitud{apuestas} = \longitud{pagos})}
 
-\requiere{noNulos([trayectorias, cooperan, apuestas, pagos, eventos])}
+%Hay un desacuerdo con la interpretacion: por un lado, es posible pensar que trayectorias[0] = lista(recursosDeJugadorEnPosicion0). Es posible que sea trayectorias[0] = lista()
+% \asegura{\longitud{trayectorias} \geq 
+% \longitud{old(trayectorias)}}
 
-\asegura{\longitud{trayectoria} >= \longitud{old(trayectoria)}}
 \asegura{
 \paraTodo[unalinea]{i}{\ent}{
 0 \leq i < \longitud{eventos} \implicaLuego 
@@ -77,5 +78,45 @@ trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i
 }
 \end{proc}
 
+\subsection{Trayectoria Extraña Escalera}
+
+\begin{proc}{trayectoriaExtrañaEscalera}{\In trayectoria : \TLista{\float}}
+
+\requiere{\longitud{trayectoria} > 0}
+
+\asegura{res = \True \iff unicoMaximoLocal(trayectoria)}
+\hfill \break
+\pred{unicoMaximoLocal}{\In trayectoria : \TLista{\float}}
+{(\longitud{trayectoria} = 1 )\newline \lor \newline (\longitud{trayectoria} = 2  \land (trayectoria[0] \neq trayectoria[1])) \newline \lor \newline (\longitud{trayectoria} > 2 \land cantidadMaximosLocales(trayectoria) = 1)}
+\hfill \break
+\aux{cantidadMaximosLocales}{\In trayectoria : \TLista{\float}}{\float}{(\IfThenElse{trayectoria[0] > trayectoria[1]}{1}{0})\newline+\newline(\IfThenElse{trayectoria[\longitud{trayectoria} - 1] > trayectoria[\longitud{trayectoria} - 2]}{1}{0})\newline+\newline(\IfThenElse{\sum\limits_{i=1}^{\longitud{trayectoria} - 2} trayectoria[i - 1] < trayectoria[i] \land trayectoria[i + 1] < trayectoria[i])}{1}{0}}
+
+\end{proc}
+
+\subsection{Individuo decide si cooperar o no}
+\begin{proc}{individuoDecideSiCooperarONo}{\In individuo : \nat, \In recursos : \TLista{\float}, \Inout cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{}
+
+\requiere{\longitud{individuo} = \longitud{recursos} = \longitud{cooperan}}
+\requiere{\longitud{apuestas} = \longitud{pagos} = \longitud{eventos}}
+
+\asegura{cooperan[individuo] = true \Leftrightarrow \\(recursosFinalesSiCoopera(individuo, recursos, cooperan, apuestas, pagos, eventos) \geq \\recursosFinalesSiDeserta(individuo, recursos, apuestas, pagos, eventos))}
+\hfill \break
+\aux{recursosFinalesSiCoopera}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{\float}
+{frutosFondoComun(recursos,coopera,apuestas,pagos,eventos)}
+
+\hfill \break
+\aux{recursosFinalesSiDeserta}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{\float}
+{recursosParaJugadoriTrasEventoInicial(recursos,apuestas,pagos,eventos,i) + frutosFondoComun(recursos,coopera,apuestas,pagos,eventos)}
+\hfill \break
+\aux{recursosParaJugadoriTrasEventoInicial}{\In recursos : \TLista{\float}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In i : \ent}{\float}{
+recursos[i]*apuestas[i][\textbf{eventos[i][0]}]*pagos[i][\textbf{eventos[i][0]}]
+}
+\hfill \break
+\aux{frutosFondoComun}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}{\frac{fondoComun(recursos, apuestas, pagos, eventos ,cooperan)}{\longitud{cooperan}}}
+\hfill \break
+\aux{fondoComun}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}{
+\\ \sum_{i=0}^{|cooperan|-1} \\(\IfThenElse{cooperan[i] = \True}{recursosParaJugadoriTrasEventoInicial(recursos, apuestas, pagos, eventos, i)}{0})
+}
+\end{proc}
 
 \end{document}
