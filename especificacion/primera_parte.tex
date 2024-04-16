@@ -54,6 +54,22 @@ $\sum_{k=0}^{\longitud{recursos}-1}$
 \begin{proc}{trayectoriaDeLosFrutosIndividualesALargoPlazo}{\Inout trayectorias : \TLista{\TLista{\float}}, \In cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}{}
 
 \requiere{(\longitud{trayectorias} = \longitud{cooperan}) \wedge (\longitud{apuestas} = \longitud{pagos})}
+% Requieres q pense q habria q sumar, debatirlo antes de ponerlos en la version final
+\requiere{\longitud{trayectorias} \leq 1}
+
+\requiere{\longitud{trayectorias} = \longitud{cooperan} = \longitud{apuestas} = \longitud{pagos} = \longitud{eventos}}
+
+\requiere{\paraTodo[unalinea]{i}{\ent}{0 \leq i < \longitud{apuestas}}{\implicaLuego \sum\limits_   {j=0}^{\longitud{apuestas[i]}-1}apuestas[i][j] = 1 \land apuestas[i][j] > 0}}
+
+\requiere{\paraTodo[unalinea]{k}{\ent}{0 \leq k < \longitud{trayectorias}}{ \implicaLuego trayectorias[i]} = 1}
+
+\requiere{\paraTodo[unalinea]{l}{\ent}{0 \leq l < \longitud{pagos}}{ \implicaLuego elementosPositivos(l)}}
+
+\requiere{\paraTodo[unalinea]{m}{\ent}{0 \leq m < \longitud{eventos}}{\implicaLuego tieneEventosPosibles(eventos[m],pagos[m]}}
+
+\requiere{\paraTodo[unalinea]{n}{\ent}{0 \leq n < \longitud{apuestas}}{\implicaLuego \longitud{apuestas[n] = pagos[n]}}}
+
+%Falta pedir que la longitud interna de todas las listas de listas sean iguales y escribir los preds y auxiliares de estos requiere
 
 %Hay un desacuerdo con la interpretacion: por un lado, es posible pensar que trayectorias[0] = lista(recursosDeJugadorEnPosicion0). Es posible que sea trayectorias[0] = lista()
 % \asegura{\longitud{trayectorias} \geq 
@@ -95,36 +111,50 @@ trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i
 \end{proc}
 
 \subsection{Individuo decide si cooperar o no}
-\begin{proc}{individuoDecideSiCooperarONo}{\In individuo : \nat, \In recursos : \TLista{\float}, \Inout cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{}
+\begin{proc}{individuoDecideSiCooperarONo}{\In individuo : \nat, \In recursos : \TLista{\float}, \Inout cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}}{}
 
 \requiere{ 0 \leq individuo < \longitud{recursos}}
-\requiere{\longitud{recursos} = \longitud{cooperan} \longitud{apuestas} = \longitud{pagos} = \longitud{eventos}}
+\requiere{\longitud{recursos} = \longitud{cooperan} = \longitud{apuestas} = \longitud{pagos}}
 
 \asegura{cooperan[individuo] = true \Leftrightarrow \\(recursosFinalesSiCoopera(individuo, recursos, cooperan, apuestas, pagos, eventos) \geq \\recursosFinalesSiDeserta(individuo, recursos, apuestas, pagos, eventos))}
 \hfill \break
-\aux{recursosFinalesSiCoopera}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{\float}
-{frutosFondoComun(recursos,coopera,apuestas,pagos,eventos)}
+\aux{recursosFinalesSiCoopera}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}\\
+{frutosFondoComunTrasEventoj(recursos,coopera,apuestas,pagos,eventos,\longitud{eventos[individuo]})}
 
 \hfill \break
-\aux{recursosFinalesSiDeserta}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{\float}
-{recursosParaJugadoriTrasEventoInicial(recursos,apuestas,pagos,eventos,i) + frutosFondoComun(recursos,coopera,apuestas,pagos,eventos)}
+\aux{recursosFinalesSiDeserta}{\In i : \nat, \In recursos : \TLista{\float},  \In apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}
+{\sum_{j=0}^{\longitud{eventos[i]}-1} \textbf{if} j=0\; \textbf{then}\\  recursos[i]*productoriaPagos(apsts,pagos,evtos,i,j)\;\textbf{else} \\productoriaPagos(apsts,pagos,evtos,i,j)*frutosFondoComunTrasEventoj(rcsos,apsts,pagos,evtos,cooperan,j-1) \;\textbf{fi}}
+
 \hfill \break
-\aux{recursosParaJugadoriTrasEventoInicial}{\In recursos : \TLista{\float}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In i : \ent}{\float}{
-recursos[i]*apuestas[i][\textbf{eventos[i][0]}]*pagos[i][\textbf{eventos[i][0]}]
+\aux{productoriaPagos}{\In recursos : \TLista{\float},\In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In i : \ent, \In j : \ent}{\float}{
+(\prod_{j'=j}^{\longitud{eventos[i]}-1}{apuestas[i][eventos[i][j']]*pagos[i][eventos[i][j']])}
 }
 \hfill \break
-\aux{frutosFondoComun}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}{\frac{fondoComun(recursos, apuestas, pagos, eventos ,cooperan)}{\longitud{cooperan}}}
+\aux{frutosFondoComunTrasEventoj}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}, \In cantEventos : \ent}{\float}
+{\prod_{j=0}^{cantEventos-1}\\
+{\IfThenElse{j = 0}{\frac{fondoComunj(rcsos,apstas,pagos,evtos,cooperan,j,true)}{\longitud{cooperan}}}{\frac{fondoComunj(rcsos,apstas,pagos,evtos,,cooperan,j,false)}{\longitud{cooperan}}}}}
+
+
 \hfill \break
-\aux{fondoComun}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}}{\float}{
-\\ \sum_{i=0}^{|cooperan|-1} \\(\IfThenElse{cooperan[i] = \True}{recursosParaJugadoriTrasEventoInicial(recursos, apuestas, pagos, eventos, i)}{0})
+\aux{fondoComunj}{\In recursos : {\TLista{\float}}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In cooperan : \TLista{\bool}, \In j : \ent, \In primer-evento : \bool}{\float}{
+\\ \sum_{i=0}^{|cooperan|-1} \\(\IfThenElse{cooperan[i] = \True} {recursosParaJugadoriTrasEventoj(rcsos, apsts, pagos, evtos, i, j, primer-evento}{0})
 }
+\hfill \break 
+\aux{recursosParaJugadoriTrasEventoj}{\In recursos : \TLista{\float}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}, \In i : \ent, \In j : \ent, \In primer-evento : \bool }{\float}{ \IfThenElse{primer-evento = true}{recursos[i]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i][j]}]}{apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i][j]}]}}
 \end{proc}
 
+
 \subsection{Individuo actualiza apuesta}
-\begin{proc}{individuoActualizaApuesta}{\In individuo : \nat, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \Inout apuestas : \TLista{\TLista{float}},  \In pagos : \TLista{\TLista{float}},  \In eventos : \TLista{\TLista{\nat}}}{}
+\begin{proc}{individuoActualizaApuesta}{\In individuo : \nat, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \Inout apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}}{}
 \requiere{}
-\asegura{}
-    
+\asegura{apuestasOptimas(individuo,recursos,cooperan,apuestas,pagos,eventos)}
+\hfill \break
+\pred{apuestasOptimas}{\In i : \ent, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}
+{\paraTodo[unalinea]{j}{\ent}{0 \leq j < \longitud{eventos[i]-1}
+\implicaLuego apuestas[i][eventos[i][j]] = 1
+}
+}
+
 \end{proc}
 
 
