@@ -10,7 +10,7 @@
 \materia{Algoritmos y Estructuras de Datos}
 \grupo{DMSCXIDCOPMHURGQJPDP}
 
-\integrante{Delicia, Felipe Nahuel}{002/01}{delicia4581@gmail.com}
+\integrante{Delicia, Felipe Nahuel}{1282/23}{delicia4581@gmail.com}
 \integrante{Bagini, Jeremias Agustin}{618/20}{jerebagini@gmail.com}
 \integrante{Bol\'ivar, Carlos}{990/23}{carlosbolivarp24@gmail.com}
 \integrante{De La Pina, Lucas Le\'on}{924/22}{lldelapina@gmail.com}
@@ -111,6 +111,44 @@ trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i
 \end{proc}
 
 \subsection{Individuo decide si cooperar o no}
+
+La especifación del siguiente ejercicio surge de aplicar dos estrategias algebraícas con el fin de resolver dos problemas concretos: cuánto es el rédito final si decida cooperar y, en caso contrario, cuánto sería si opta por desertar. Para entender estas estrategias tuvimos que ver cada situación con ejemplos. Estos se presentan a continuación:
+\begin{itemize}
+    \item Cálculo de recursos si el individuo coopera:
+    \\
+    Supongamos que tenemos dos individuos jugando y ambos son cooperadores.
+    \begin{enumerate} \setlength\itemsep{0cm}
+	\item $\frac{r_1 a_{11} p_{11} + r_2 a_{21} p_{21}}{2}$ (Fondo común tras primer evento distribuido entre jugadores totales)
+	\item $\frac{r_1 a_{11} p_{11} + r_2 a_{21} p_{21}}{2} * \frac{a_{12} p_{12} +a_{22} p_{22}}{2}$ (Fondo común tras segundo evento distribuido entre jugadores totales)
+	\item $\frac{r_1 a_{11} p_{11} + r_2 a_{21} p_{21}}{2} * \frac{a_{12} p_{12} +a_{22} p_{22}}{2} * \frac{a_{13} p_{13} + a_{23} p_{23}}{2}$ (Fondo común tras segundo evento distribuido entre jugadores totales)
+ \\ 
+ \\
+    Generalizando, podemos ver que las ganancias de un cooperador i está determinada por el producto sucesivo de sumas de las ganancias de cada cooperador tras un evento genérico j dividido por la cantidad de jugadores: \\
+    \\
+    $\prod_{j=0}^{cantEventos}{(\frac{sumaDeGananciasDeCooperadoresTrasEsteEvento}{cantJugadores})}$
+    \\
+\end{enumerate}
+    \item Cálculo de recursos si el individuo deserta:
+    \\
+    Analicemos la trayectoria de un individuo genérico.
+    \begin{enumerate} \setlength\itemsep{0cm}
+	\item $r_0 p_0 a_0 + frutosFondoComun(0)$ (Recursos del individuo 0 tras primer evento -suma sus ganancias individuales más la parte que recibe por la división del fondo común tras cada evento)
+	\item $(r_0 p_0 a_0 + frutosfrutosFondoComun(0)) * p_1 a_1 + frutosFondoComun(1)$ (Tras segundo evento)
+	\item $[(r_0 p_0 a_0 + frutosFondoComun(0)) * p_1 a_1 + frutosFondoComun(1)] * p_2 a_2 + frutosFondoComun(2)$ (Tras tercer evento)\\
+ \\
+    Desarrollando esta expresion obtenemos: \\ \\
+    $r_0 p_0 a_0 p_1 a_1 p_2 a_2 + frutosFondoComun(0) p_1 a_1 p_2 a_2 + frutosFondoComun(1) p_2 a_2 + frutosFondoComun(2)$
+    \\ \\
+    De nuevo, generalizamos este patrón para j eventos:\\
+    \\
+    $r_0p_0a_0 *\sum_{j=1}^{cantEventos}{(frutosFondoComun(j-1)*productoriaDePagosYApuestasDesdej)}$
+\end{enumerate}
+\end{itemize}
+
+Nótese que en ambos casos (tanto si coopera como si deserta) el primer evento siempre tiene una particularidad: el recurso inicial tiene que multiplicarse por el pago y las apuestas correspondientes al primer evento. Eso se ve reflejado en la especificación
+\\
+\\
+\\
 \begin{proc}{individuoDecideSiCooperarONo}{\In individuo : \nat, \In recursos : \TLista{\float}, \Inout cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}}{}
 
 \requiere{ 0 \leq individuo < \longitud{recursos}}
@@ -147,17 +185,286 @@ trayectoria[i][j]*apuestas[i][\textbf{eventos[i][j]}]*pagos[i][\textbf{eventos[i
 \subsection{Individuo actualiza apuesta}
 \begin{proc}{individuoActualizaApuesta}{\In individuo : \nat, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \Inout apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}}{}
 \requiere{}
-\asegura{apuestasOptimas(individuo,recursos,cooperan,apuestas,pagos,eventos)}
+\asegura{\longitud{apuestas} = \longitud{old(apuestas)} \land \hfill \break apuestasValidas(apuestas) \land \hfill \break
+sonTodosPositivos(apuestas) \land \hfill \break todasTienenLaMismaLongitud(apuestas, old(apuestas) \land \hfill \break losDemasNoCambiaronSuApuesta(apuestas, individuo) \land \hfill \break mejoroApuesta(apuestas, old(apuestas),individuo,recursos,pagos,eventos,cooperan) \land \hfill \break 
+noExisteUnaApuestaMejor(individuo,recursos,apuestas,pagos,eventos,cooperan)}
+
 \hfill \break
-\pred{apuestasOptimas}{\In i : \ent, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}
-{\paraTodo[unalinea]{j}{\ent}{0 \leq j < \longitud{eventos[i]-1}
-\implicaLuego apuestas[i][eventos[i][j]] = 1
-}
-}
+%apuestasOptimas(individuo,recursos,cooperan,apuestas,pagos,eventos)
+\pred{mejoroSuApuesta}{\In nuevaAp : \TLista{\TLista{\float}}, \In viejaAp : \TLista{\TLista{\float}},\In individuo : \ent, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool},  \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}
+{recursosFinales(individuo,recursos,nuevaAp,pagos,eventos,cooperan) \geq recursosFinales(individuo,recursos,viejaAp,pagos,eventos,cooperan)}
+
+\pred{noExisteUnaApuestaMejor}{\In individuo : \ent, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \In apuestas : \TLista{\TLista{\float}}, \In pagos : \TLista{\TLista{\float}}, \In eventos : \TLista{\TLista{\nat}}}
+{(\existe [unalinea]{l}{\TLista{\TLista{\float}}}{\longitud{l} = \longitud{apuestas} \yLuego \longitud{l[individuo]} = \longitud{apuestas[individuo] \land \hfill \break apuestasValidas(l) \land \hfill \break
+recursosFinales(individuo,recursos,l,pagos,eventos,cooperan) > recursosFinales(individuo,recursos,apuestas,pagos,eventos,cooperan)}})}
+
+
+\aux{recursosFinales}{\In individuo : \nat, \In recursos : \TLista{\float}, \In cooperan : \TLista{\bool}, \Inout apuestas : \TLista{\TLista{\float}},  \In pagos : \TLista{\TLista{\float}},  \In eventos : \TLista{\TLista{\nat}}}{\IfThenElse{cooperan[individuo]}{recursosFinalesSiCoopera(individuo,recursos,apuestas,pagos,eventos,cooperan)}{recursosFinalesSiDeserta(individuo,recursos,apuestas,pagos,eventos,cooperan)}}
+
+\pred {apuestasValidas}{\In apuestas: \TLista{\TLista{\float}}}{\paraTodo[unalinea]{i}{\ent}{0 \leq i < \longitud{apuestas}}{\implicaLuego (\sum\limits_{h=0}^{\longitud{apuestas[i]} - 1}{apuestas[i][h]}) = 1}}
 
 \end{proc}
 
+\section{Demostración de correctitud}
 
+\subsection{Fruto Del Trabajo Puramente Individual}
+
+Para la demostración del programa, lo principal es demostrar la correctitud del ciclo. Para demostrar la correctitud de un ciclo, debemos hallar un invariante y una funcion variante que cumplan con el Teorema de correctitud de un ciclo.
+Para ello, usamos los siguientes datos del ciclo:
+\begin{enumerate}
+    \item Precondición del ciclo: $\\P_c \equiv i=0 \land res = recursos$
+    \item Postcondición del ciclo: $\\Q_c \equiv i=|eventos| \land res = recursos * (apuesta_c pago_c)^{#apariciones(evento, T)} * (apuesta_s pago_s)^{#apariciones(evento, F)}$
+    \item Guarda del ciclo: $\\B \equiv i<|eventos|$
+\end{enumerate}
+
+A partir de estos datos y del programa aportado, decidimos elegir lo siguiente:
+\begin{enumerate}
+    \item Invariante: $\\ I \equiv 0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$
+    \item Función variante: $\\ fv = |eventos| - i$
+\end{enumerate}
+\hfill \break
+
+
+\begin{itemize}
+    \item En primer lugar, nos encargaremos de probar: $\mathbf{P_c \longrightarrow I}$: 
+\end{itemize}
+
+$i=0 \land res = recursos \longrightarrow 0 \leq i \leq |eventos| \land res = recursos*\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$ \\
+
+Lo cual es verdadero, debido a que $i=0 \longrightarrow 0 \leq i \leq |eventos|$ Y si tenemos en cuenta que el valor de i es 0, la productoria nos daría 1 debido a que el techo de la productoria es menor que el piso y $res = recursos$
+\\
+\\
+
+\begin{itemize}
+    \item Probemos ahora $\mathbf{\{I \land B\}S\{I\}}$:
+    \\
+    \\
+    Tenemos: 
+\end{itemize}
+
+$B \land I \equiv i<|eventos| \land 0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$\\
+
+$\equiv 0 \leq i < |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s} \equiv B \land I$ \\
+
+Luego, con fines de mayor compresión a la hora de leer, decidimos llamar al programa correspondiente al bloque condicional $S_1$ y al programa correspondiente a la asignación $i = i + 1$ como $S_2$ para el calculo de la weakest precondition.\\
+
+$wp(S_1, wp(S_2, I)) \equiv wp(S_1, def(i + 1) \yLuego I_{i+1}^{i})$ Observación: $def(i+1)=True$\\
+
+$wp(S_1, I_{i+1}^{i}) \equiv (def(eventos[i])\land def(eventos)\land def(i)) \yLuego [(eventos[i]=True \land wp(res = res*apuesta_c*pagos_c,I_{i+1}^{i}))\lor(eventos[i]=False \land wp(res = res*apuesta_s*pagos_s,I_{i+1}^{i}))]$ Observación: $def(i)=def(eventos)=True$\\
+
+$\equiv (0 \leq i < |eventos|) \yLuego [(eventos[i]=True \land [I_{i+1}^{i}]_{res*apuesta_c*pagos_c}^{res})\lor(eventos[i]=False \land [I_{i+1}^{i}]_{res*apuesta_s*pagos_s}^{res})]$\\
+
+Teniendo en cuenta que:\\
+
+$I_{i+1}^{i} \equiv 0 \leq i+1 \leq |eventos| \land res = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$\\
+
+Ahora podemos dividir en caso que $eventos[i]$ sea \textbf{True} y sea \textbf{False}.\\
+
+En caso que sea \textbf{True}:\\
+
+$wp(S_1, wp(S_2, I)) \equiv (eventos[i]=True \land [I_{i+1}^{i}]_{res*apuesta_c*pagos_c}^{res}) \land (0 \leq i < |eventos|)$\\
+
+$\equiv (0 \leq i < |eventos|) \land (0 \leq i+1 \leq |eventos|) \land (res*apuesta_c*pagos_c = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+$\equiv (0 \leq i < |eventos|) \land (-1 \leq i \leq |eventos|-1) \land (res*apuesta_c*pagos_c = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+$\eqiv (0 \leq i < |eventos|) \land (res*apuesta_c*pagos_c = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+Teniendo en cuenta la hipótesis de que eventos[i]=True, entonces sale que:\\
+
+$\equiv (0 \leq i < |eventos|) \land (res = \frac{recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}}{apuesta_c*pagos_c})$\\
+
+$\equiv (0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+Finalmente se puede ver que:\\
+
+$I \land \neg B \longrightarrow [(0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})]$\\
+
+$\equiv[( 0 \leq i < |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})] \longrightarrow [(0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})]$\\
+
+En caso que sea \textbf{False}:\\
+
+$wp(S_1, wp(S_2, I)) \equiv (eventos[i]=False \land [I_{i+1}^{i}]_{res*apuesta_s*pagos_s}^{res}) \land (0 \leq i < |eventos|)$\\
+
+$\equiv (0 \leq i < |eventos|) \land (0 \leq i+1 \leq |eventos|) \land (res*apuesta_s*pagos_s = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+$\equiv (0 \leq i < |eventos|) \land (-1 \leq i \leq |eventos|-1) \land (res*apuesta_s*pagos_s = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+$\equiv (0 \leq i < |eventos|) \land (res*apuesta_s*pagos_s = recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+Teniendo en cuenta la hipótesis de que eventos[i]=False, entonces sale que:\\
+
+$\equiv (0 \leq i < |eventos|) \land (res = \frac{recursos *\prod_{j=0}^{i}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}}{apuesta_s*pagos_s})$\\
+
+$\equiv (0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})$\\
+
+Finalmente se puede ver que:\\
+
+$I \land \neg B \longrightarrow [(0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})]$\\
+
+$\equiv[( 0 \leq i < |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})] \longrightarrow [(0 \leq i < |eventos|) \land (res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s})]$
+\\
+\\
+
+\begin{itemize}
+    \item Ahora, probaremos que $\mathbf{I \land \neg B \longrightarrow Q_c}$: Debemos ver que:
+\end{itemize}
+
+$(0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}) \land (|eventos| \leq i)$ \\
+
+$\longrightarrow i=|eventos| \land res = recursos * (apuesta_c pago_c)^{#apariciones(evento, T)} * (apuesta_s pago_s)^{#apariciones(evento, F)}$\\
+
+$\equiv i = |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$ \\
+
+$\longrightarrow i=|eventos| \land res = recursos * (apuesta_c pago_c)^{#apariciones(evento, T)} * (apuesta_s pago_s)^{#apariciones(evento, F)}$\\
+
+Lo cual es verdadero, debido a que en ambos lados los factores que componen a res son iguales y los valores de i también.
+
+\hfill \break
+\hfill \break
+
+\begin{itemize}
+    \item A continuación probemos que $\mathbf{\{I \land B \land V_0 = fv\}S\{ fv<V_0 \}}$:
+\end{itemize}
+\\
+
+Teniendo en cuenta que
+$S_1$ es el bloque condicional y
+$S_2$ equivale a i := i + 1, quiero ver que asumiendo $\mathbf{\{I \land B \land V_0 = fv\}}$ 
+implica $wp(S, \mathbf{\{fv < V_0}\})$.
+\\ 
+
+$wp(S, \mathbf{\{fv < V_0})\}$
+\equiv $wp(S_1, wp(S_2, fv < V_0))$ 
+\\
+
+\equiv $wp(S_1, def(i + 1) \yLuego [fv < V_0]_{i+1}^{i})$
+\\
+
+\equiv $wp(S_1, \longitud{eventos}-(i+1)<V_0)$
+\\
+
+\equiv $wp(S_1, \longitud{eventos}-i-1<V_0)$
+\\
+
+Nombro: 
+\begin{itemize}
+\item $WS_2 \equiv \longitud{eventos}-i-1<V_0)$
+\item $S'_1 \equiv res = res* apuesta_c * pago_c$
+\item $S''_1 \equiv res = res* apuesta_s * pago_s$
+\end{itemize}
+\\
+
+\equiv $wp(S_1, WS_2)$
+\\
+
+Entonces por Axioma 4
+\\
+
+\equiv $(def(eventos) \land def(i) \land def(eventos[i])) \yLuego 
+((eventos[i]=True \land wp(S'_1,WS_2)) \lor (eventos[i] = False \land wp(S''_1, WS_2)))$
+\\
+
+Observación: $def(eventos) = def(i) = True$.
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego ((eventos[i]=True \land wp(S'_1,WS_2)) \lor (eventos[i] = False \land wp(S''_1, WS_2)))$
+\\
+
+Ahora podemos dividir en caso que $eventos[i]$ sea \textbf{True} y sea \textbf{False}.
+\\
+
+En caso que sea \textbf{True}:
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego wp(S'_1, WS_2)$
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego (def(res * apuesta_c * pago_c) \yLuego [WS_2]_{res * apuesta_c * pago_c}^{res})$
+\\
+
+Observar que $def(res * apuesta_c * pago_c) = True$
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$
+\\
+
+Ahora veo el caso $eventos[i] = $ \textbf{False}
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego wp(S''_1, WS_2)$
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego (def(res * apuesta_s * pagos_s) \yLuego [WS_2]_{res * apuesta_s * pago_s}^{res})$
+\\
+
+Observar que $def(res * apuesta_s * pago_s) = True$
+\\
+
+\equiv $0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$
+\\
+
+Como los resultados en ambos casos es igual, entonces $wp(S, fv < V_0)$ 
+\equiv $ 0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$. 
+\\
+
+
+Quiero ver que $I \land B \land V_0 = fv \longrightarrow 0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$.
+\\
+
+$I \land B \land V_0 = fv$ \equiv 
+ $ (0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}) \land i < \longitud{eventos} \land V_0 = \longitud{eventos}-i$
+ \\
+
+ \equiv $ (0 \leq i <|eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}) \land i < \longitud{eventos} \land V_0 = \longitud{eventos}-i$
+\\
+
+Entonces por $I \land B \land V_0 = fv \longrightarrow 0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$:
+\\
+
+$(0 \leq i <|eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}) \land i < \longitud{eventos} \land V_0 = \longitud{eventos}-i \longrightarrow 0 \leq i < \longitud{eventos} \yLuego \longitud{eventos} - i - 1 < V_0$ 
+\\
+
+Asumo $I \land B \land V_0 = fv$ Verdadero.
+\\
+
+Del antecedente me interesa $ 0 \leq i < \longitud{eventos} \land V_0 = \longitud{eventos} - 1$.
+\\
+
+Por lo que $ 0 \leq i < \longitud{eventos} \land V_0 = \longitud{eventos} - 1 \longrightarrow 0 \leq i < \longitud{eventos} \yLuego \longitud{eventos}-i-1 < V_0$
+\\
+
+Como vale $ 0 \leq i < \longitud{eventos} \land V_0 = \longitud{eventos} - 1$
+\\
+
+Entonces $\longitud{eventos} -i - 1 < \longitud{eventos} - i$
+
+
+\begin{itemize}
+    \item Por último que $\mathbf{(I \land fv \leq 0)\longrightarrow \neg B}$\\
+\end{itemize}
+Con el invariante y la función variante definidos como:\\
+$I \equiv 0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s}$\\
+$fv = |eventos| - i$
+\begin{itemize}
+    \item 
+\end{itemize}
+Tenemos:
+
+$fv<V_0 \land I \equiv [0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s} \land |eventos| - i \leq 0]$\\
+
+$\equiv [0 \leq i \leq |eventos| \land res = recursos *\prod_{j=0}^{i-1}\IfThenElse{evento[j]=True}{apuesta_c*pago_c}{apuesta_s*pago_s} \land |eventos| \leq i]$
+\\
+
+$\equiv 0 \leq i \leq |eventos| \land  |eventos| \leq i \longrightarrow i = |eventos| \longrightarrow |eventos| \leq i$\\
+\\
+
+Con las demostraciones anteriores hemos probado que el ciclo: 
+\begin{itemize}
+    \item Es parcialmente correcto
+    \item Termina
+\end{itemize}
+Queda entonces demostrada la correctitud del ciclo.
 
 
 \end{document}
